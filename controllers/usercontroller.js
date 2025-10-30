@@ -59,7 +59,10 @@ const checkUser = (req, res) => {
 };
 
 const profile = async (req, res) => {
-  try {
+  try 
+  {
+    //field projection
+    
     const user = await User.findById(req.user.id).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json({ profile: user });
@@ -67,5 +70,42 @@ const profile = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+//updateUser
+const updateUser =async(req,res)=>{
+  try{
+    const { name, email, password, phone } = req.body || {};
+    const userID = req.user.id
+    const userData = await User.findByIdAndUpdate(userID,{name,email,password,phone},{new:true})
+res.json({data:userData})
+  }
+  catch(error)
+  {
+     console.error(error);
+    res.status(500).json({ message: 'Server error' });
 
-module.exports = { register, login, logout, checkUser, profile };
+  }
+}
+
+// DELETE USER 
+const deleteUser= async (req, res) => {
+  try {
+    const userID = req.params?.userID
+    if(!userID)
+    {
+      return res.status(400).json({error:`UserID is required`})
+
+    }
+    const userData = await User.findByIdAndDelete(userID);
+    if(!userData){
+      return res.status(404).json({error:'User not found'})
+    }
+    res.json({message:"User deleted successfully"})
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
+module.exports = { register, login, logout, checkUser, profile ,updateUser,deleteUser };

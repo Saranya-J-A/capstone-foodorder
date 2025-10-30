@@ -1,25 +1,31 @@
-const express = require('express')
-const app = express()
-require(`dotenv`).config()
+const express = require('express');
+const app = express();
+const dotenv = require('dotenv');
+const cookieParser = require('cookie-parser');
+const connectDB = require('./config/db');
+const router = require('./routes/index'); 
+const cors = require('cors'); 
 
-const port = process.env.PORT
-const connectDB = require (`./config/db.js`)
-const router = require(`./routes/index.js`)
-const cookieParser = require('cookie-parser')
+dotenv.config();
+connectDB();
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+//  Enable CORS so Postman can send cookies
+app.use(cors({
+  origin: true,       
+  credentials: true   
+}));
 
-//http://localhost:3001/api
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-app.use(express.json())
-app.use(cookieParser())
-app.use('/api',router)
+//  All routes start with /api
+app.use('/api', router);
 
-//connect DB
-connectDB()
+// fallback route
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
